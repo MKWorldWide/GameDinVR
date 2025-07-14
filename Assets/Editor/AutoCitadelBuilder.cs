@@ -159,6 +159,11 @@ public class AutoCitadelBuilder : EditorWindow
         CreateGDIAccessGate("SovereignAccessZone", new Vector3(10, 2, 10), "Sovereign");
         CreateGDIAccessGate("GenesisCoreGate", new Vector3(0, 2, -18), "GenesisCore");
 
+        // --- Quantum Systems ---
+        CreateQuantumResonanceOrbs();
+        CreateQuantumLightingSystem();
+        CreateQuantumAudioSystem();
+
         // --- Save Scene ---
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
         EditorSceneManager.SaveOpenScenes();
@@ -299,6 +304,162 @@ public class AutoCitadelBuilder : EditorWindow
         Debug.Log($"[AutoCitadelBuilder] Created QuantumGatekeeper portal: {name} with tier {requiredTierValue}");
     }
 
+    // --- Helper: Create Quantum Resonance Orbs ---
+    private static void CreateQuantumResonanceOrbs()
+    {
+        // Create resonance orbs around the citadel
+        Vector3[] orbPositions = {
+            new Vector3(8, 3, 8),
+            new Vector3(-8, 3, 8),
+            new Vector3(8, 3, -8),
+            new Vector3(-8, 3, -8),
+            new Vector3(0, 5, 12),
+            new Vector3(0, 5, -12)
+        };
+
+        string[] orbTiers = { "Wanderer", "Initiate", "Radiant", "Sovereign", "Radiant", "Sovereign" };
+        float[] frequencies = { 440f, 523f, 659f, 784f, 880f, 1047f }; // A4, C5, E5, G5, A5, C6
+
+        for (int i = 0; i < orbPositions.Length; i++)
+        {
+            GameObject orb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            orb.name = $"QuantumResonanceOrb_{i}";
+            orb.transform.position = orbPositions[i];
+            orb.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+
+            // Add crystal material
+            Material crystal = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/NeonCrystal.mat");
+            if (crystal) orb.GetComponent<Renderer>().sharedMaterial = crystal;
+
+            // Add trigger collider
+            var triggerCollider = orb.AddComponent<SphereCollider>();
+            triggerCollider.isTrigger = true;
+            triggerCollider.radius = 2f;
+
+            // Add QuantumResonanceOrb script
+            var resonanceType = GetTypeByName("QuantumResonanceOrb");
+            if (resonanceType != null)
+            {
+                var resonance = orb.AddComponent(resonanceType);
+                
+                // Set tier requirement
+                var tierField = resonanceType.GetField("minimumTier");
+                if (tierField != null)
+                    tierField.SetValue(resonance, orbTiers[i]);
+                
+                // Set frequency
+                var freqField = resonanceType.GetField("baseFrequency");
+                if (freqField != null)
+                    freqField.SetValue(resonance, frequencies[i]);
+                
+                // Set resonance range
+                var rangeField = resonanceType.GetField("maxResonanceRange");
+                if (rangeField != null)
+                    rangeField.SetValue(resonance, 8f);
+            }
+
+            // Create particle system for resonance effects
+            GameObject particles = new GameObject($"{orb.name}_Particles");
+            particles.transform.SetParent(orb.transform);
+            particles.transform.localPosition = Vector3.zero;
+            
+            var particleSystem = particles.AddComponent<ParticleSystem>();
+            var emission = particleSystem.emission;
+            emission.rateOverTime = 0f; // Start inactive
+            
+            var main = particleSystem.main;
+            main.startColor = Color.white;
+            main.startSpeed = 2f;
+            main.startLifetime = 3f;
+
+            Debug.Log($"[AutoCitadelBuilder] Created QuantumResonanceOrb: {orb.name} with tier {orbTiers[i]}");
+        }
+    }
+
+    // --- Helper: Create Quantum Lighting System ---
+    private static void CreateQuantumLightingSystem()
+    {
+        // Create lighting controller
+        GameObject lightingController = new GameObject("QuantumLightingController");
+        lightingController.transform.position = new Vector3(0, 10, 0);
+
+        // Add QuantumLightingController script
+        var lightingType = GetTypeByName("QuantumLightingController");
+        if (lightingType != null)
+        {
+            var lighting = lightingController.AddComponent(lightingType);
+            
+            // Set main light reference
+            var mainLight = GameObject.Find("MainDirectionalLight")?.GetComponent<Light>();
+            var mainLightField = lightingType.GetField("mainLight");
+            if (mainLightField != null && mainLight != null)
+                mainLightField.SetValue(lighting, mainLight);
+            
+            // Enable tier colors
+            var tierColorsField = lightingType.GetField("enableTierColors");
+            if (tierColorsField != null)
+                tierColorsField.SetValue(lighting, true);
+            
+            // Enable day/night cycle
+            var dayNightField = lightingType.GetField("enableDayNightCycle");
+            if (dayNightField != null)
+                dayNightField.SetValue(lighting, true);
+        }
+
+        // Create additional ambient lights
+        for (int i = 0; i < 4; i++)
+        {
+            float angle = i * Mathf.PI * 2 / 4;
+            GameObject ambientLight = new GameObject($"AmbientLight_{i}");
+            ambientLight.transform.position = new Vector3(Mathf.Cos(angle) * 15, 8, Mathf.Sin(angle) * 15);
+            
+            var light = ambientLight.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.color = new Color(0.8f, 0.9f, 1f, 1f);
+            light.intensity = 3f;
+            light.range = 20f;
+        }
+
+        Debug.Log("[AutoCitadelBuilder] Created QuantumLightingController system");
+    }
+
+    // --- Helper: Create Quantum Audio System ---
+    private static void CreateQuantumAudioSystem()
+    {
+        // Create audio controller
+        GameObject audioController = new GameObject("QuantumAudioController");
+        audioController.transform.position = new Vector3(0, 5, 0);
+
+        // Add QuantumAudioController script
+        var audioType = GetTypeByName("QuantumAudioController");
+        if (audioType != null)
+        {
+            var audio = audioController.AddComponent(audioType);
+            
+            // Enable tier music
+            var tierMusicField = audioType.GetField("enableTierMusic");
+            if (tierMusicField != null)
+                tierMusicField.SetValue(audio, true);
+            
+            // Enable environmental audio
+            var envAudioField = audioType.GetField("enableDayNightAudio");
+            if (envAudioField != null)
+                tierMusicField.SetValue(audio, true);
+            
+            // Enable portal audio
+            var portalAudioField = audioType.GetField("enablePortalAudio");
+            if (portalAudioField != null)
+                portalAudioField.SetValue(audio, true);
+            
+            // Enable resonance audio
+            var resonanceAudioField = audioType.GetField("enableResonanceAudio");
+            if (resonanceAudioField != null)
+                resonanceAudioField.SetValue(audio, true);
+        }
+
+        Debug.Log("[AutoCitadelBuilder] Created QuantumAudioController system");
+    }
+
     // --- Scene Validation ---
     [MenuItem("GameDinVR/Validate Scene Integrity")]
     public static void ValidateCitadelScene()
@@ -310,6 +471,9 @@ public class AutoCitadelBuilder : EditorWindow
         int gateCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.CompareTag("GDIAccessGate"));
         int sessionVerifierCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumSessionVerifier")) != null);
         int tierBridgeCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("PlayerTierBridge")) != null);
+        int resonanceOrbCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumResonanceOrb")) != null);
+        int lightingControllerCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumLightingController")) != null);
+        int audioControllerCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumAudioController")) != null);
         
         Debug.Log($"[GameDinVR] Scene Validation Report:\n" +
                  $" Portals with TeleportTrigger: {portalCount}\n" +
@@ -318,7 +482,10 @@ public class AutoCitadelBuilder : EditorWindow
                  $" Thrones: {throneCount}\n" +
                  $" GDI Tier Gates: {gateCount}\n" +
                  $" QuantumSessionVerifier: {sessionVerifierCount}\n" +
-                 $" PlayerTierBridge: {tierBridgeCount}");
+                 $" PlayerTierBridge: {tierBridgeCount}\n" +
+                 $" QuantumResonanceOrbs: {resonanceOrbCount}\n" +
+                 $" QuantumLightingController: {lightingControllerCount}\n" +
+                 $" QuantumAudioController: {audioControllerCount}");
         
         // Warnings for missing essentials
         if (portalCount < 3) Debug.LogWarning("[GameDinVR] Warning: Fewer than 3 portals with TeleportTrigger found.");
@@ -328,5 +495,8 @@ public class AutoCitadelBuilder : EditorWindow
         if (gateCount < 3) Debug.LogWarning("[GameDinVR] Warning: Fewer than 3 GDI Tier Gates found.");
         if (sessionVerifierCount < 1) Debug.LogWarning("[GameDinVR] Warning: No QuantumSessionVerifier found.");
         if (tierBridgeCount < 1) Debug.LogWarning("[GameDinVR] Warning: No PlayerTierBridge found.");
+        if (resonanceOrbCount < 6) Debug.LogWarning("[GameDinVR] Warning: Fewer than 6 QuantumResonanceOrbs found.");
+        if (lightingControllerCount < 1) Debug.LogWarning("[GameDinVR] Warning: No QuantumLightingController found.");
+        if (audioControllerCount < 1) Debug.LogWarning("[GameDinVR] Warning: No QuantumAudioController found.");
     }
 } 
