@@ -121,21 +121,11 @@ public class AutoCitadelBuilder : EditorWindow
         bar.transform.localScale = new Vector3(4, 2, 4);
         if (marble) bar.GetComponent<Renderer>().sharedMaterial = marble;
 
-        // --- Portals ---
-        string[] portalNames = { "GenesisCorePortal", "CouncilRoomPortal", "ArcadePortal" };
-        Vector3[] portalPositions = { new Vector3(0, 2, 18), new Vector3(-16, 2, 0), new Vector3(16, 2, 0) };
-        for (int i = 0; i < portalNames.Length; i++)
-        {
-            GameObject portal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            portal.name = portalNames[i];
-            portal.transform.position = portalPositions[i];
-            portal.transform.localScale = new Vector3(2, 0.2f, 2);
-            if (crystal) portal.GetComponent<Renderer>().sharedMaterial = crystal;
-            // Add TeleportTrigger script if available
-            var teleportType = GetTypeByName("TeleportTrigger");
-            if (teleportType != null)
-                portal.AddComponent(teleportType);
-        }
+        // --- QuantumGatekeeper Portals ---
+        CreateQuantumGatekeeperPortal("GenesisCorePortal", new Vector3(0, 2, 18), "GenesisCore", "The Genesis Core Awaits...", GetTypeByName("QuantumGatekeeper.GDI_Tier"), 2); // Radiant
+        CreateQuantumGatekeeperPortal("CouncilRoomPortal", new Vector3(-16, 2, 0), "Council Chamber", "The Council Awaits...", GetTypeByName("QuantumGatekeeper.GDI_Tier"), 1); // Initiate
+        CreateQuantumGatekeeperPortal("ArcadePortal", new Vector3(16, 2, 0), "Arcade", "The Arcade Awaits...", GetTypeByName("QuantumGatekeeper.GDI_Tier"), 0); // Wanderer
+        CreateQuantumGatekeeperPortal("SovereignSanctumPortal", new Vector3(0, 2, -18), "Sovereign Sanctum", "The Sovereign Sanctum Awaits...", GetTypeByName("QuantumGatekeeper.GDI_Tier"), 3); // Sovereign
 
         // --- Lighting ---
         GameObject mainLight = new GameObject("MainDirectionalLight");
@@ -231,19 +221,112 @@ public class AutoCitadelBuilder : EditorWindow
         }
     }
 
+    // --- Helper: Create QuantumGatekeeper Portal ---
+    private static void CreateQuantumGatekeeperPortal(string name, Vector3 pos, string destinationName, string loreSubtitle, System.Type tierEnumType, int requiredTierValue)
+    {
+        // Create portal base
+        GameObject portal = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        portal.name = name;
+        portal.transform.position = pos;
+        portal.transform.localScale = new Vector3(2, 0.2f, 2);
+        
+        // Add crystal material if available
+        Material crystal = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/NeonCrystal.mat");
+        if (crystal) portal.GetComponent<Renderer>().sharedMaterial = crystal;
+        
+        // Add trigger collider
+        var triggerCollider = portal.AddComponent<BoxCollider>();
+        triggerCollider.isTrigger = true;
+        triggerCollider.size = new Vector3(3, 3, 3);
+        
+        // Add QuantumGatekeeper script
+        var gatekeeperType = GetTypeByName("QuantumGatekeeper");
+        if (gatekeeperType != null)
+        {
+            var gatekeeper = portal.AddComponent(gatekeeperType);
+            
+            // Set required tier
+            var tierField = gatekeeperType.GetField("requiredTier");
+            if (tierField != null && tierEnumType != null)
+            {
+                var tierValue = System.Enum.ToObject(tierEnumType, requiredTierValue);
+                tierField.SetValue(gatekeeper, tierValue);
+            }
+            
+            // Set destination scene name
+            var sceneNameField = gatekeeperType.GetField("destinationSceneName");
+            if (sceneNameField != null)
+                sceneNameField.SetValue(gatekeeper, destinationName);
+            
+            // Set use scene name to true
+            var useSceneField = gatekeeperType.GetField("useSceneName");
+            if (useSceneField != null)
+                useSceneField.SetValue(gatekeeper, true);
+            
+            // Set lore subtitle
+            var loreField = gatekeeperType.GetField("loreSubtitle");
+            if (loreField != null)
+                loreField.SetValue(gatekeeper, loreSubtitle);
+            
+            // Enable debug mode for testing
+            var debugField = gatekeeperType.GetField("debugMode");
+            if (debugField != null)
+                debugField.SetValue(gatekeeper, true);
+        }
+        
+        // Create tier glyph icon
+        GameObject tierGlyph = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        tierGlyph.name = $"{name}_TierGlyph";
+        tierGlyph.transform.SetParent(portal.transform);
+        tierGlyph.transform.localPosition = new Vector3(0, 1.5f, 0);
+        tierGlyph.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+        tierGlyph.transform.LookAt(Camera.main.transform);
+        
+        // Create preview plane
+        GameObject previewPlane = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        previewPlane.name = $"{name}_PreviewPlane";
+        previewPlane.transform.SetParent(portal.transform);
+        previewPlane.transform.localPosition = new Vector3(0, 2.5f, 0);
+        previewPlane.transform.localScale = new Vector3(1f, 0.75f, 1f);
+        previewPlane.transform.LookAt(Camera.main.transform);
+        
+        // Create audio source for portal sounds
+        var audioSource = portal.AddComponent<AudioSource>();
+        audioSource.spatialBlend = 1.0f; // 3D audio
+        audioSource.volume = 0.8f;
+        audioSource.maxDistance = 10f;
+        
+        Debug.Log($"[AutoCitadelBuilder] Created QuantumGatekeeper portal: {name} with tier {requiredTierValue}");
+    }
+
     // --- Scene Validation ---
     [MenuItem("GameDinVR/Validate Scene Integrity")]
     public static void ValidateCitadelScene()
     {
         int portalCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("TeleportTrigger")) != null);
+        int quantumPortalCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumGatekeeper")) != null);
         int tokenDisplayCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("TokenStatusDisplay")) != null);
         int throneCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.name.ToLower().Contains("throne"));
         int gateCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.CompareTag("GDIAccessGate"));
-        Debug.Log($"[GameDinVR] Scene Validation Report:\n Portals with TeleportTrigger: {portalCount}\n TokenStatusDisplay objects: {tokenDisplayCount}\n Thrones: {throneCount}\n GDI Tier Gates: {gateCount}");
+        int sessionVerifierCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("QuantumSessionVerifier")) != null);
+        int tierBridgeCount = GameObject.FindObjectsOfType<GameObject>().Count(go => go.GetComponent(GetTypeByName("PlayerTierBridge")) != null);
+        
+        Debug.Log($"[GameDinVR] Scene Validation Report:\n" +
+                 $" Portals with TeleportTrigger: {portalCount}\n" +
+                 $" QuantumGatekeeper Portals: {quantumPortalCount}\n" +
+                 $" TokenStatusDisplay objects: {tokenDisplayCount}\n" +
+                 $" Thrones: {throneCount}\n" +
+                 $" GDI Tier Gates: {gateCount}\n" +
+                 $" QuantumSessionVerifier: {sessionVerifierCount}\n" +
+                 $" PlayerTierBridge: {tierBridgeCount}");
+        
         // Warnings for missing essentials
         if (portalCount < 3) Debug.LogWarning("[GameDinVR] Warning: Fewer than 3 portals with TeleportTrigger found.");
+        if (quantumPortalCount < 4) Debug.LogWarning("[GameDinVR] Warning: Fewer than 4 QuantumGatekeeper portals found.");
         if (tokenDisplayCount < 1) Debug.LogWarning("[GameDinVR] Warning: No TokenStatusDisplay found.");
         if (throneCount < 1) Debug.LogWarning("[GameDinVR] Warning: No throne found.");
         if (gateCount < 3) Debug.LogWarning("[GameDinVR] Warning: Fewer than 3 GDI Tier Gates found.");
+        if (sessionVerifierCount < 1) Debug.LogWarning("[GameDinVR] Warning: No QuantumSessionVerifier found.");
+        if (tierBridgeCount < 1) Debug.LogWarning("[GameDinVR] Warning: No PlayerTierBridge found.");
     }
 } 

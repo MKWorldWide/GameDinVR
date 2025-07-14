@@ -23,6 +23,7 @@ Welcome to the sacred beginning of the GameDin VR world—**The Citadel of Reson
   /Materials/              # Placeholder materials
   /UI/                     # GDI Hologram Canvas prefab
   /SDKPackages/            # Downloaded UnityPackages (UdonSharp, etc.)
+  /Editor/                 # Unity Editor scripts for automation
 ```
 
 ---
@@ -36,7 +37,9 @@ Welcome to the sacred beginning of the GameDin VR world—**The Citadel of Reson
 3. **Import VRChat SDK3 (Worlds) via [VCC](https://vcc.docs.vrchat.com/)**
 4. **Import UdonSharp:**
    - Double-click `Assets/SDKPackages/UdonSharp.unitypackage` in Unity
-5. **Open `Assets/Scenes/GameDin_Citadel.unity`**
+5. **Auto-build the scene:**
+   - In Unity, go to `GameDinVR > Build Citadel Scene`
+   - This creates the complete scene with all components
 6. **Build & test in VRChat!**
 
 ---
@@ -69,11 +72,34 @@ Welcome to the sacred beginning of the GameDin VR world—**The Citadel of Reson
 
 ---
 
+## 🧬 Core Systems
+
+### QuantumGatekeeper Portal System
+- **Advanced tiered teleportation** with GDI tier requirements
+- **Visual effects** including portal VFX, tier glyphs, and destination previews
+- **Audio feedback** with activation sounds, denial effects, and voice whispers
+- **Developer tools** with debug mode, tier bypass, and gizmo visualization
+- **Multiplayer preparation** for future cross-client synchronization
+
+### Authentication & Tier Management
+- **QuantumSessionVerifier**: Backend session validation and player authentication
+- **PlayerTierBridge**: GDI tier fetching and caching from GameDin backend
+- **GDIAccessGate**: Basic tier-based access control for sacred zones
+
+### Advanced Features
+- **QuantumSigilChamber**: Sealed chambers that unlock based on tier requirements
+- **GDIMemoryOrb**: Glowing orbs that unlock lore and secrets
+- **TieredMemoryUnlocker**: Activates content based on verified player tiers
+- **DestinationPreviewRenderer**: Real-time destination preview capture system
+
 ## 💡 Next Steps
-- [ ] Automate UnityPackage import & scene setup
+- [x] ✅ Automated scene building and component assignment
+- [x] ✅ Advanced portal system with tier-based access control
+- [x] ✅ Backend integration for live GDI tier syncing
 - [ ] Add dynamic lighting/music triggers
 - [ ] Integrate real wallet/token data
 - [ ] Expand lore chambers & social features
+- [ ] Implement multiplayer portal synchronization
 
 ---
 
