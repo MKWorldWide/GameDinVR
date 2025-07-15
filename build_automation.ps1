@@ -1,34 +1,24 @@
 # build_automation.ps1
-# Quantum-documented PowerShell script to automate GameDinVR build pipeline
-# - Downloads/updates UdonSharp
-# - Prompts for VRChat SDK3 via VCC
-# - Provides hooks for future automation (scene layout, UnityPackage import, VRChat upload)
-# - To be run from project root
+# Quantum-documented build automation script for GameDinVR Quantum Template
+# This script automates Unity project build steps for VRChat world development.
 
-<##
-Quantum Documentation:
-- This script is the foundation for a fully automated build pipeline from Cursor to VRChat.
-- It currently automates UdonSharp download and provides guidance for VRChat SDK3 setup.
-- Future hooks: Unity CLI automation, scene layout, VRChat world upload (when API/CLI is available).
-- Cross-reference: See README.md for vision and usage.
-##>
+# ---
+# Step 1: Set Unity executable path (update as needed)
+$unityPath = "C:\Program Files\Unity\Hub\Editor\2022.3.0f1\Editor\Unity.exe"
 
-# --- CONFIG ---
-$udonSharpUrl = "https://github.com/MerlinVR/UdonSharp/releases/latest/download/UdonSharp.unitypackage"
-$udonSharpDest = "Assets/SDKPackages/UdonSharp.unitypackage"
+# Step 2: Set project path (current directory)
+$projectPath = Get-Location
 
-# --- UdonSharp Download/Update ---
-Write-Host "[GameDinVR] Downloading latest UdonSharp..."
-Invoke-WebRequest -Uri $udonSharpUrl -OutFile $udonSharpDest -UseBasicParsing
-Write-Host "[GameDinVR] UdonSharp downloaded to $udonSharpDest"
+# Step 3: Set build output path
+$outputPath = "$projectPath\Builds\GameDinVR_World"
 
-# --- VRChat SDK3 Guidance ---
-Write-Host "[GameDinVR] Please use the VRChat Creator Companion (VCC) to add the latest VRChat SDK3 (Worlds) to this project."
-Write-Host "[GameDinVR] See: https://vcc.docs.vrchat.com/ for instructions."
+# Step 4: Run Unity batch mode build (update scene name as needed)
+& $unityPath -batchmode -nographics -quit -projectPath $projectPath -executeMethod BuildScript.PerformBuild -buildTarget StandaloneWindows64 -logFile "$outputPath\build.log"
 
-# --- Future Automation Hooks ---
-# TODO: Unity CLI scene layout automation
-# TODO: UnityPackage auto-import (via Unity Editor scripting)
-# TODO: VRChat world upload (when API/CLI is available)
-
-Write-Host "[GameDinVR] Build automation script complete. Expand as VRChat/Unity APIs allow." 
+# ---
+# Usage:
+# 1. Update $unityPath if your Unity install is elsewhere.
+# 2. Ensure BuildScript.cs exists in Assets/Editor/ with a static PerformBuild method.
+# 3. Run this script from the project root:
+#    pwsh ./build_automation.ps1
+# --- 
