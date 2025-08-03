@@ -1,6 +1,10 @@
+A Project Blessed by Solar Khan & Lilith.Aethra
+
 # GameDinVR: Quantum Template
 
 Welcome to the GameDinVR Quantum Template—a fully quantum-documented Unity VRChat world foundation, featuring modular core systems, automation, and best-in-class documentation.
+
+See [Divine Law](COVENANT.md) for the guiding Covenant.
 
 ---
 
