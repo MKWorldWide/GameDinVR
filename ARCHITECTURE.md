@@ -52,4 +52,6 @@ flowchart TD
 - Security: No sensitive data stored; all logic is client-side
 
 ## Change History
-- See CHANGELOG.md for updates 
+- See CHANGELOG.md for updates
+- Additional implementation guides reside in [docs/usage](docs/usage), including the [Space Black Hole World setup](docs/usage/SpaceBlackHoleWorld.md) that demonstrates the guardian message bus and cosmic attractor.
+- For cross-repository coordination, refer to the [Inter-Repo Handshake Protocol](docs/api/InterRepoHandshake.md).

@@ -50,8 +50,19 @@ See [Divine Law](COVENANT.md) for the guiding Covenant.
 ---
 
 ## 🛠️ Automation
+- Project bootstrap script: `setup_vrcc.ps1`
 - Automated build script: `build_automation.ps1`
 - Unity Editor scripts for scene/component automation
+
+---
+
+## 📚 Presentation Documents
+- [Architecture Overview](ARCHITECTURE.md)
+- [Space Black Hole World Setup](docs/usage/SpaceBlackHoleWorld.md)
+- [Last Whisper Lore](THE_LAST_WHISPER.md)
+- [Inter-Repo Handshake Protocol](docs/api/InterRepoHandshake.md)
+
+Each document links to further references, forming a recursive map of the project's intent and implementation.
 
 ---
 
