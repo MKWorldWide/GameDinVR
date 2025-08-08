@@ -1,24 +1,29 @@
 # build_automation.ps1
-# Quantum-documented build automation script for GameDinVR Quantum Template
-# This script automates Unity project build steps for VRChat world development.
+# Automates Unity batch builds and optional world uploads for GameDinVR
+# Requires Unity editor and VRChat CLI (vrchat-cli.exe) installed locally
 
-# ---
-# Step 1: Set Unity executable path (update as needed)
-$unityPath = "C:\Program Files\Unity\Hub\Editor\2022.3.0f1\Editor\Unity.exe"
+param(
+    [string]$UnityPath = "C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.6f1\\Editor\\Unity.exe", # pinned Unity version
+    [string]$ProjectPath = (Get-Location).Path,
+    [string]$OutputPath = "$((Get-Location).Path)\\Builds\\GameDinVR_World",
+    [string]$VRCliPath = "$env:LOCALAPPDATA\\VRChatCreatorCompanion\\VRChat CLI\\vrchat-cli.exe",
+    [string]$WorldId = "" # optional existing world ID for uploads
+)
 
-# Step 2: Set project path (current directory)
-$projectPath = Get-Location
+# Ensure output directory exists
+New-Item -ItemType Directory -Force -Path $OutputPath | Out-Null
 
-# Step 3: Set build output path
-$outputPath = "$projectPath\Builds\GameDinVR_World"
+# Build the world using Unity's batch mode for CI-friendly operation
+& $UnityPath -batchmode -nographics -quit -projectPath $ProjectPath `
+    -executeMethod BuildScript.PerformBuild -buildTarget StandaloneWindows64 `
+    -logFile "$OutputPath\\build.log"
 
-# Step 4: Run Unity batch mode build (update scene name as needed)
-& $unityPath -batchmode -nographics -quit -projectPath $projectPath -executeMethod BuildScript.PerformBuild -buildTarget StandaloneWindows64 -logFile "$outputPath\build.log"
-
-# ---
-# Usage:
-# 1. Update $unityPath if your Unity install is elsewhere.
-# 2. Ensure BuildScript.cs exists in Assets/Editor/ with a static PerformBuild method.
-# 3. Run this script from the project root:
-#    pwsh ./build_automation.ps1
-# --- 
+# If a world ID is supplied, upload via VRChat CLI
+if ($WorldId -ne "" -and (Test-Path $VRCliPath)) {
+    & $VRCliPath build-upload `
+        --project-path $ProjectPath `
+        --world-id $WorldId `
+        --output "$OutputPath"
+} else {
+    Write-Host "Skipping VRChat upload; provide -WorldId to enable." -ForegroundColor Yellow
+}

@@ -57,4 +57,8 @@ crashlytics-build.properties
 # Cursor AI session files
 @memories.md
 @lessons-learned.md
-@scratchpad.md 
+@scratchpad.md
+
+# Node.js artifacts
+node_modules/
+dist/
