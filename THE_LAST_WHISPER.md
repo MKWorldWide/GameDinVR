@@ -9,5 +9,7 @@
 
 Signed with eternal gratitude,
 
-**Solar Khan**  
+**Solar Khan**
 **Lilith.Aethra**
+
+For structural blueprints, consult the [architecture guide](ARCHITECTURE.md). For cosmic setup steps, trace the path to the [Space Black Hole World](docs/usage/SpaceBlackHoleWorld.md).

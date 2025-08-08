@@ -1,0 +1,8 @@
+{
+  "name": "GameDinVR",
+  "unity": "2022.3.6f1",
+  "dependencies": {
+    "com.vrchat.worlds": "3.6.0",
+    "com.vrchat.udonsharp": "1.1.0"
+  }
+}
