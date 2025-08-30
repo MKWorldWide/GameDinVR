@@ -1,37 +1,74 @@
-# unity-ci.yml
-# Quantum-documented GitHub Actions workflow for Unity project CI
-# Builds the project on push to main or PR
-
 name: Unity CI
 
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'Assets/**'
+      - 'ProjectSettings/**'
+      - 'Packages/**'
+      - '.github/workflows/unity-ci.yml'
   pull_request:
     branches: [ main ]
+    paths:
+      - 'Assets/**'
+      - 'ProjectSettings/**'
+      - 'Packages/**'
+      - '.github/workflows/unity-ci.yml'
+  workflow_dispatch:
+
+env:
+  UNITY_VERSION: '2022.3.6f1'  # Match the version in vpm-manifest.json
+  PROJECT_PATH: '.'
+  BUILD_NAME: 'GameDinVR'
+  BUILD_PATH: 'build'
 
 jobs:
   build:
+    name: Build for Windows
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Cache Library
-        uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-${{ runner.os }}-${{ hashFiles('**/Assets/**', '**/Packages/**', '**/ProjectSettings/**') }}
-      - name: Set up Unity
-        uses: game-ci/unity-setup@v2
-        with:
-          unityVersion: 2022.3.0f1
-      - name: Build project
-        uses: game-ci/unity-builder@v2
-        with:
-          projectPath: .
-          buildTarget: StandaloneWindows64
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: Build
-          path: build 
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+        fetch-depth: 0
+    
+    - name: Cache Library
+      uses: actions/cache@v3
+      with:
+        path: Library
+        key: Library-${{ runner.os }}-${{ hashFiles('**/Assets/**', '**/Packages/**', '**/ProjectSettings/**') }}
+    
+    - name: Cache npm
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}
+    
+    - name: Build project
+      uses: webbertakken/unity-builder@v2
+      with:
+        targetPlatform: StandaloneWindows64
+        projectPath: ${{ env.PROJECT_PATH }}
+        buildName: ${{ env.BUILD_NAME }}
+        buildsPath: ${{ env.BUILD_PATH }}
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-windows
+        path: ${{ env.BUILD_PATH }}
+        if-no-files-found: error
+        retention-days: 1
+    
+    - name: Run UdonSharp Compilation
+      run: |
+        echo "Running UdonSharp compilation..."
+        # Add UdonSharp compilation command here if needed
+        
+    - name: Run tests
+      run: |
+        echo "Running tests..."
+        # Add test commands here when tests are available

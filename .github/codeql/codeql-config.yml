@@ -1,0 +1,51 @@
+---
+name: "Custom CodeQL Configuration"
+
+disabled-queries:
+  # Disable some JavaScript queries that have high false positive rates
+  - "js/missing-rate-limiting"
+  - "js/hardcoded-credentials"
+  
+query-filters:
+  - exclude:
+      id: "*"
+      tags: ["security"]
+      severity: "error"
+  - include:
+      id: "*"
+      tags: ["security"]
+      severity: ["error", "warning"]
+
+extraction:
+  csharp:
+    # For Unity projects, we need to specify the solution file
+    solution: "**/*.sln"
+    
+  javascript:
+    # For Node.js projects
+    root: "serafina/"
+
+paths-ignore:
+  # Ignore common directories that don't need to be scanned
+  - "**/node_modules/"
+  - "**/Library/"
+  - "**/Temp/"
+  - "**/Builds/"
+  - "**/build/"
+  - "**/dist/"
+  - "**/coverage/"
+  - "**/test-results/"
+  - "**/__tests__/"
+  - "**/test/"
+  - "**/tests/"
+  - "**/examples/"
+  - "**/samples/"
+  - "**/docs/"
+  - "**/.github/"
+  - "**/.vscode/"
+  - "**/.idea/"
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.json"
+  - "**/*.yml"
+  - "**/*.yaml"

@@ -1,0 +1,97 @@
+version: 2
+updates:
+  # Enable security updates for all ecosystems
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    # Check for updates to GitHub Actions
+    schedule:
+      interval: "daily"
+    # Apply security updates with higher priority
+    commit-message:
+      prefix: "chore(deps): "
+    # Group updates by dependency type
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    # Allow up to 10 open pull requests for updates
+    open-pull-requests-limit: 10
+    # Only allow updates to the patch and minor versions
+    versioning-strategy: increase
+    ignore:
+      # Ignore major version updates for now
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # npm dependencies for Serafina
+  - package-ecosystem: "npm"
+    directory: "/serafina"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "chore(deps): "
+      include: "scope"
+    groups:
+      # Group all production dependencies together
+      production:
+        patterns:
+          - "*"
+        update-types: ["version-update"]
+      # Group all development dependencies together
+      dev-dependencies:
+        patterns:
+          - "*"
+        update-types: ["version-update"]
+    # Allow up to 10 open pull requests for updates
+    open-pull-requests-limit: 10
+    # Only allow updates to the patch and minor versions
+    versioning-strategy: increase
+    ignore:
+      # Ignore major version updates for now
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Enable security updates for .NET (Unity) dependencies
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chore(deps): "
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Enable security updates for Docker dependencies
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chore(deps): "
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+# Configuration for security updates
+security-updates:
+  # Enable security updates for all ecosystems
+  enable: true
+  # Only apply security updates to the default branch
+  target-branch: "main"
+  # Apply security updates with high priority
+  labels: ["security"]
+  # Assign security team for review
+  assignees: ["@security-team"]
+  # Notify security team about updates
+  reviewers: ["@security-team"]
+  # Automatically merge security updates that pass CI
+  auto-merge: true
+  # Only auto-merge if the update is a patch version
+  auto-merge-strategy: "update-patch"
